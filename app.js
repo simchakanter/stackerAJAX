@@ -1,11 +1,19 @@
 $(document).ready( function() {
 	$('.unanswered-getter').submit( function(event){
 		// zero out results if previous search has run
-		$('.results').html('');
+		$('.results').empty();
 		// get the value of the tags the user submitted
 		var tags = $(this).find("input[name='tags']").val();
 		getUnanswered(tags);
 	});
+	$('.inspiration-getter').submit( function(event) {
+		// remove the existing search results, if any
+		$('.results').empty();
+		//get the value of the tags the user submitted
+		var tag = $(this).find("input[name='answerers']").val();
+		console.log(tag);
+		getInspiration(tag);
+	})
 });
 
 // this function takes the question object returned by StackOverflow 
@@ -85,6 +93,27 @@ var getUnanswered = function(tags) {
 	.fail(function(jqXHR, error, errorThrown){
 		var errorElem = showError(error);
 		$('.search-results').append(errorElem);
+	});
+};
+
+var getInspiration = function(tag) {
+	console.log("I'm running the function with paramater " + tag);
+
+	// parameters for the SO API
+	var request = {
+		tagged: tag,
+		site: 'stackoverflow'
+	};
+
+	console.log("The request parameters are " + request);
+	var result = $.ajax({
+		url: "http://api.stackexchange.com/2.2/tags/" + tag + "/top-answerers/all_time",
+		data: request,
+		dataType: "jsonp",
+		type: "GET",
+	})
+	.done(function(result){
+		console.log("I'm done");
 	});
 };
 
