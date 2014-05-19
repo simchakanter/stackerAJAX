@@ -13,7 +13,7 @@ $(document).ready( function() {
 		var tag = $(this).find("input[name='answerers']").val();
 		console.log(tag);
 		getInspiration(tag);
-	})
+	});
 });
 
 // this function takes the question object returned by StackOverflow 
@@ -46,6 +46,27 @@ var showQuestion = function(question) {
  							'<p>Reputation: ' + question.owner.reputation + '</p>'
 	);
 
+	return result;
+};
+
+var showAnswerer = function(answerer) {
+	// clone the result template HTML for answerer
+	var result = $('.templates .answerer').clone();
+
+	// Set the user properties in the result
+	var userElem = result.find('.answerer a');
+	userElem.attr('href', answerer.user.link);
+	userElem.text(answerer.user.display_name);
+
+	// Set the post count
+	var postCountElem = result.find('.post-count');
+	postCountElem.text(answerer.post_count);
+
+	// Set the score
+	var scoreElem = result.find('.score');
+	scoreElem.text(answerer.score);
+
+	// return the element
 	return result;
 };
 
@@ -105,7 +126,7 @@ var getInspiration = function(tag) {
 		site: 'stackoverflow'
 	};
 
-	console.log("The request parameters are " + request);
+	console.log("The request parameters are " + request.tagged + " " + request.site);
 	var result = $.ajax({
 		url: "http://api.stackexchange.com/2.2/tags/" + tag + "/top-answerers/all_time",
 		data: request,
@@ -113,7 +134,19 @@ var getInspiration = function(tag) {
 		type: "GET",
 	})
 	.done(function(result){
-		console.log("I'm done");
+		console.log("Received requested data");
+		var searchResults = showSearchResults(request.tagged, result.items.length);
+		$('.search-results').html(searchResults);
+
+		$.each(result.items, function(i, item) {
+			//Stopped here
+			var topAnswerer = showAnswerer(item);
+			$('.results').append(topAnswerer);
+		});
+	})
+	.fail(function(jqXHR, error, errorThrown){
+		var errorElem = showError(error);
+		$('.search-results').append(errorElem);
 	});
 };
 
